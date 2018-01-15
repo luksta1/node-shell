@@ -1,52 +1,57 @@
 let fs = require('fs');
 let request = require('request');
 
-let pwd = (arg) => {
-    process.stdout.write(process.argv[1]);
-    process.stdout.write("prompt > ");
+let pwd = (arg, done) => {
+    done(process.argv[1]);
 }
 
-let ls = (arg) => {
+let ls = (arg, done) => {
+    let output = '';
     fs.readdir('.', function(err, files) {
         if (err) throw err;
         files.forEach(function(file) {
-            process.stdout.write(file.toString() + "\n");
-            process.stdout.write("prompt > ");
+            output += file.toString() + "\n";
         })
+        done(output);
     });
 }
 
 let echo = (string) => {
     console.log(string);
+    process.stdout.write("prompt > ");
 }
 
-let cat = (arg) => {
+let cat = (arg, done) => {
+    let output = '';
     fs.readFile(arg, (err, data) => {
         if (err) throw err;
-        process.stdout.write(data.toString() + "\n");
-        process.stdout.write("prompt > ");
+        output = data.toString() + "\n";
+        done(output)
     });
 }
 
-let head = (arg) => {
-    fs.readFile(arg, (err, data) => {
-        if (err) throw err;
-        let fileContentArr = data.toString() + "\n";
-        process.stdout.write(fileContentArr.split('\n').slice(0, 5).join('\n'));
-        process.stdout.write("prompt > ");
-    });
-}
-
-let tail = (arg) => {
+let head = (arg, done) => {
+    let output = '';
     fs.readFile(arg, (err, data) => {
         if (err) throw err;
         let fileContentArr = data.toString() + "\n";
-        process.stdout.write(fileContentArr.split('\n').slice(-5).join('\n'));
-        process.stdout.write("prompt > ");
+        output = fileContentArr.split('\n').slice(0, 5).join('\n');
+        done(output)
     });
 }
 
-let sort = (arg) => {
+let tail = (arg, done) => {
+    let output = '';
+    fs.readFile(arg, (err, data) => {
+        if (err) throw err;
+        let fileContentArr = data.toString() + "\n";
+        output = fileContentArr.split('\n').slice(-5).join('\n');
+        done(output)
+    });
+}
+
+let sort = (arg, done) => {
+    let output = '';
     fs.readFile(arg, (err, data) => {
         if (err) throw err;
         let fileContentArr = data.toString() + "\n";
@@ -55,23 +60,25 @@ let sort = (arg) => {
         fileContentArr.forEach(function(line) {
             sortedContentArr.push(line.trim());
         });
-        process.stdout.write(sortedContentArr.sort().join('\n'))
-        process.stdout.write("prompt > ");
+        output = sortedContentArr.sort().join('\n');
+        done(output)
     });
 }
 
-let wc = (arg) => {
+let wc = (arg, done) => {
+    let output = '';
     fs.readFile(arg, (err, data) => {
         if (err) throw err;
         let fileContentArr = data.toString() + "\n";
         fileContentArr = fileContentArr.split('\n');
         let numberOfLines = fileContentArr.length;
-        process.stdout.write(numberOfLines.toString() + '\n')
-        process.stdout.write("prompt > ");
+        output = numberOfLines.toString() + '\n';
+        done(output)
     });
 }
 
-let uniq = (arg) => {
+let uniq = (arg, done) => {
+    let output = '';
     fs.readFile(arg, (err, data) => {
         if (err) throw err;
         let fileContentArr = data.toString() + "\n";
@@ -82,7 +89,16 @@ let uniq = (arg) => {
                 uniqArr.push(line);
             }
         });
-        process.stdout.write(uniqArr.join('\n'))
+        output = uniqArr.join('\n');
+        done(output)
+    });
+}
+
+let curl = (arg) => {
+    request('http://' + arg, function(error, response, body) {
+        console.log('error:', error); // Print the error if one occurred
+        console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+        console.log('body:', body); // Print the HTML for the Google homepage.
         process.stdout.write("prompt > ");
     });
 }
@@ -95,5 +111,6 @@ module.exports = {
     tail,
     sort,
     wc,
-    uniq
+    uniq,
+    curl
 };
